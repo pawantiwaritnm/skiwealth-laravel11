@@ -1,0 +1,169 @@
+================================================================================
+                   SKI WEALTH LARAVEL - DOCKER QUICK START
+================================================================================
+
+🎯 STEP-BY-STEP INSTRUCTIONS
+
+STEP 1: Install Docker Desktop
+------------------------------
+1. Download from: https://www.docker.com/products/docker-desktop
+2. Install and restart your computer
+3. Make sure Docker Desktop is running (check system tray)
+
+
+STEP 2: Export Your Current Database (Optional)
+-----------------------------------------------
+If you have data in XAMPP MySQL you want to keep:
+
+1. Make sure XAMPP MySQL is running
+2. Double-click: export-xampp-database.bat
+3. This creates a backup file
+
+
+STEP 3: Stop XAMPP
+------------------
+1. Open XAMPP Control Panel
+2. Click "Stop" next to Apache (optional, can keep running)
+3. Click "Stop" next to MySQL (REQUIRED - must stop!)
+
+
+STEP 4: Start Docker Application
+---------------------------------
+1. Double-click: docker-start.bat
+2. Wait 5-10 minutes for first-time setup
+3. Press any key when finished
+
+
+STEP 5: Access Your Application
+-------------------------------
+Open your browser and go to:
+- Website:    http://localhost:8080
+- phpMyAdmin: http://localhost:8081
+  Username: root
+  Password: root
+
+
+STEP 6: Import Your Database (If you exported in Step 2)
+--------------------------------------------------------
+1. Go to: http://localhost:8081
+2. Click on "wealthDBski" database
+3. Click "Import" tab
+4. Click "Choose File"
+5. Select your backup file (database-backup-*.sql)
+6. Click "Import" button at bottom
+
+
+================================================================================
+                              COMMON TASKS
+================================================================================
+
+Run Migrations:
+---------------
+Double-click: docker-artisan.bat
+Type: migrate
+Press Enter
+
+
+Clear Cache:
+------------
+Double-click: docker-artisan.bat
+Type: cache:clear
+Press Enter
+
+
+Stop Application:
+-----------------
+Double-click: docker-stop.bat
+
+
+View Logs:
+----------
+Open Command Prompt in project folder
+Type: docker-compose logs -f
+Press Ctrl+C to exit
+
+
+Restart Application:
+--------------------
+In Command Prompt:
+docker-compose restart
+
+
+================================================================================
+                           TROUBLESHOOTING
+================================================================================
+
+❌ Port 8080 already in use:
+  - Stop any application using port 8080
+  - Or change port in docker-compose.yml (line 23)
+
+❌ Port 3307 already in use:
+  - Make sure XAMPP MySQL is stopped
+  - Or change port in docker-compose.yml (line 50)
+
+❌ Container won't start:
+  - Make sure Docker Desktop is running
+  - Restart Docker Desktop
+  - Try: docker-compose down
+  - Then: docker-start.bat
+
+❌ Database connection error:
+  - Wait 1-2 minutes for MySQL to fully start
+  - Check logs: docker-compose logs mysql
+
+❌ Permission denied errors:
+  - Run in Command Prompt:
+    docker-compose exec app chmod -R 777 storage
+
+
+================================================================================
+                          IMPORTANT NOTES
+================================================================================
+
+✓ Docker runs on port 8080 (XAMPP is on port 80)
+✓ Both can run simultaneously if you keep Apache on different ports
+✓ MySQL data is stored in Docker volume (persists between restarts)
+✓ Your code changes are reflected immediately (no rebuild needed)
+
+
+================================================================================
+                           USEFUL COMMANDS
+================================================================================
+
+Access MySQL from Command Line:
+docker-compose exec mysql mysql -uroot -proot wealthDBski
+
+Access Application Container:
+docker-compose exec app bash
+
+Run Artisan Command:
+docker-artisan.bat [command]
+Example: docker-artisan.bat migrate
+
+Run Composer:
+docker-composer.bat [command]
+Example: docker-composer.bat install
+
+
+================================================================================
+                              NEXT STEPS
+================================================================================
+
+1. Test the application at http://localhost:8080
+2. Login/Register and test KYC flow
+3. Check phpMyAdmin to see your data
+4. Read DOCKER-README.md for detailed documentation
+
+
+================================================================================
+                          GETTING HELP
+================================================================================
+
+If you encounter issues:
+1. Check DOCKER-README.md for detailed troubleshooting
+2. Run: docker-compose logs -f
+3. Check Docker Desktop dashboard for errors
+
+
+HAPPY CODING! 🚀
+================================================================================

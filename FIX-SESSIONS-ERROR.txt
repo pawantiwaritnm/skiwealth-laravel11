@@ -1,0 +1,145 @@
+================================================================================
+                HOW TO FIX: Table 'sessions' doesn't exist
+================================================================================
+
+ERROR: SQLSTATE[42S02]: Base table or view not found: 1146
+       Table 'wealthDBski.sessions' doesn't exist
+
+CAUSE: Your .env is configured for Docker (DB_HOST=mysql) but tables haven't
+       been created yet.
+
+================================================================================
+                          CHOOSE YOUR SOLUTION
+================================================================================
+
+SOLUTION 1: Use Docker (RECOMMENDED - No MySQL Permission Issues!)
+------------------------------------------------------------------
+
+Step 1: Make sure Docker Desktop is running
+Step 2: Run this command:
+
+        docker-start.bat
+
+Step 3: This will automatically:
+        ✓ Start MySQL container
+        ✓ Start your Laravel app
+        ✓ Create all database tables
+        ✓ Set up everything
+
+Step 4: Access your app at: http://localhost:8080
+
+
+SOLUTION 2: Switch to XAMPP (If you prefer XAMPP)
+--------------------------------------------------
+
+Step 1: Run this command:
+
+        switch-to-xampp.bat
+
+Step 2: This changes your .env to use XAMPP with file sessions
+
+Step 3: Make sure XAMPP MySQL is running
+
+Step 4: You still need to fix MySQL permissions:
+
+        fix_mysql.bat
+
+Step 5: Access your app at: http://localhost
+
+
+================================================================================
+                        WHAT EACH OPTION DOES
+================================================================================
+
+DOCKER (Recommended):
+---------------------
+✓ No MySQL permission errors
+✓ Clean isolated environment
+✓ Runs on port 8080
+✓ Includes phpMyAdmin on port 8081
+✓ Everything works out of the box
+✗ Requires Docker Desktop installed
+✗ Uses more system resources
+
+XAMPP:
+------
+✓ Familiar interface
+✓ Lightweight
+✓ Runs on port 80
+✓ Includes phpMyAdmin
+✗ Has MySQL permission issues (needs fix)
+✗ More complex setup
+
+
+================================================================================
+                          QUICK COMPARISON
+================================================================================
+
+                    DOCKER              XAMPP
+Website URL:        localhost:8080      localhost
+phpMyAdmin:         localhost:8081      localhost/phpmyadmin
+MySQL Port:         3307                3306
+Setup Time:         5-10 minutes        2-3 minutes
+Issues:             None                MySQL permissions
+Redis:              Yes (included)      No
+Isolation:          Yes                 No
+
+
+================================================================================
+                       RECOMMENDED: USE DOCKER
+================================================================================
+
+Docker is recommended because:
+1. No MySQL "localhost not allowed" error
+2. Everything works immediately
+3. Same environment on any computer
+4. Can run alongside XAMPP (different ports)
+5. Matches production environment better
+
+To start with Docker:
+
+    1. Install Docker Desktop (if not installed)
+       https://www.docker.com/products/docker-desktop
+
+    2. Make sure Docker Desktop is running
+
+    3. Double-click: docker-start.bat
+
+    4. Wait 5-10 minutes (first time only)
+
+    5. Go to: http://localhost:8080
+
+That's it! Everything is set up automatically.
+
+
+================================================================================
+                       NEED TO SWITCH BETWEEN?
+================================================================================
+
+Switch to Docker:
+    1. Stop XAMPP MySQL
+    2. Copy .env.docker to .env
+    3. Run: docker-start.bat
+
+Switch to XAMPP:
+    1. Run: switch-to-xampp.bat
+    2. Start XAMPP MySQL
+    3. Run: fix_mysql.bat (one time)
+
+
+================================================================================
+                         STILL CONFUSED?
+================================================================================
+
+Just run this and everything will work:
+
+    docker-start.bat
+
+It will:
+✓ Check if Docker is installed
+✓ Build containers
+✓ Create all database tables
+✓ Start your application
+✓ Show you the URL to access
+
+================================================================================
