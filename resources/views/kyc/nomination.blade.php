@@ -348,30 +348,35 @@
                     <div class="form-group">
                         <label>Name of Guardian (Mr./Ms.) {in case of minor Nominee(s)}</label>
                         <input type="text" class="form-control" name="guardian_name" value="{{ $nomination->guardian_name ?? '' }}">
+                        <div class="error"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Mobile</label>
                         <input type="text" class="form-control" id="guardian_mobile" name="guardian_mobile" maxlength="10" value="{{ $nomination->guardian_mobile ?? '' }}">
+                        <div class="error"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Email ID</label>
                         <input type="email" class="form-control" id="guardian_email" name="guardian_email" value="{{ $nomination->guardian_email ?? '' }}">
+                        <div class="error"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Relation of Guardian with Nominee</label>
                         <input type="text" class="form-control" name="relation_of_guardian" value="{{ $nomination->relation_of_guardian ?? '' }}">
+                        <div class="error"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Date of Birth {in case of minor Nominee(s)}</label>
                         <input type="date" class="form-control" name="date_of_birth" value="{{ $nomination->date_of_birth ?? '' }}">
+                        <div class="error"></div>
                     </div>
                 </div>
             </div>
@@ -384,18 +389,21 @@
                     <div class="form-group">
                         <label>Address</label>
                         <input type="text" class="form-control" name="guardian_address" value="{{ $nomination->guardian_address ?? '' }}">
+                        <div class="error"></div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>City/Place</label>
                         <input type="text" class="form-control" name="guardian_city" value="{{ $nomination->guardian_city ?? '' }}">
+                        <div class="error"></div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>State</label>
                         <input type="text" class="form-control" name="guardian_state" value="{{ $nomination->guardian_state ?? '' }}">
+                        <div class="error"></div>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -407,12 +415,14 @@
                                 <option value="{{ $country->id }}" {{ ($nomination->guardian_country ?? 101) == $country->id ? 'selected' : '' }}>{{ $country->country }}</option>
                             @endforeach
                         </select>
+                        <div class="error"></div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>Pin Code</label>
                         <input type="text" class="form-control" id="guardian_pin_code" name="guardian_pin_code" value="{{ $nomination->guardian_pin_code ?? '' }}" maxlength="6">
+                        <div class="error"></div>
                     </div>
                 </div>
             </div>
@@ -442,6 +452,7 @@
                         <label>Document</label>
                         <input type="file" class="form-control {{ !empty($nomination->guardian_document) ? 'guardian_document_exist' : '' }}" name="guardian_document">
                         <input type="hidden" name="guardian_document_name_old" value="{{ $nomination->guardian_document ?? '' }}" />
+                        <div class="error"></div>
                         @if(!empty($nomination->guardian_document))
                             @php
                                 $ext = pathinfo($nomination->guardian_document, PATHINFO_EXTENSION);
