@@ -119,7 +119,7 @@ class NominationController extends Controller
             ];
 
             // Add guardian details if nominee is minor
-            if ($request->nominee_minor === 'Yes') {
+            if ($request->nominee_minor == 1 || $request->nominee_minor === '1') {
                 $nominationData['guardian_name'] = $request->guardian_name;
                 $nominationData['guardian_city'] = $request->guardian_city;
                 $nominationData['guardian_address'] = $request->guardian_address;

@@ -7,7 +7,9 @@
     .nomination-form { padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
     .guardian_section { display: none; }
     .last_note { background: #f8f9fa; padding: 15px; border-left: 4px solid #5b6b3d; margin: 20px 0; }
-    .error { color: red; font-size: 12px; margin-top: 5px; }
+    .error { color: red; font-size: 12px; margin-top: 5px; display: block; }
+    .text-danger { color: red; font-size: 12px; margin-top: 5px; display: block; }
+    .is-invalid { border-color: red; }
     .check_radio { margin-right: 10px; }
     #bottom-wizard { margin-top: 30px; }
     .backward, .forward { padding: 10px 30px; margin: 0 5px; }
@@ -332,10 +334,11 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <input type="radio" class="check_radio option-input" id="nominee_minor_yes" name="nominee_minor" value="1" {{ ($nomination->nominee_minor ?? 0) ? 'checked' : '' }}>
+                        <input type="radio" class="check_radio option-input" id="nominee_minor_yes" name="nominee_minor" value="1" {{ ($nomination->nominee_minor ?? 0) ? 'checked' : '' }} required>
                         <label for="nominee_minor_yes" class="label_gender">Yes</label><br>
                         <input type="radio" class="check_radio option-input" id="nominee_minor_no" name="nominee_minor" value="0" {{ ($nomination->nominee_minor ?? 0) ? '' : 'checked' }}>
                         <label for="nominee_minor_no" class="label_gender">No</label>
+                        <div class="error"></div>
                     </div>
                 </div>
             </div>

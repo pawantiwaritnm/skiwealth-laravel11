@@ -45,7 +45,7 @@
                 <div class="col-md-12 text-center m20">
                     <img src="{{ asset('images/skilogo.png') }}" class="img-responsive skilogo" alt="SKI Capital Logo">
                     <ul class="list-inline pull-right sign">
-                    @guest
+                    @if(!session('user_id'))
                         <li><a href="{{ route('auth.login') }}" class="signup2">Login</a></li>
                     @else
                         <li><a href="{{ route('auth.logout') }}" class="signup2"
@@ -55,7 +55,7 @@
                         <form id="logout-form" action="{{ route('auth.logout') }}" method="POST" style="display: none;">
                             @csrf
                         </form>
-                    @endguest
+                    @endif
                     </ul>
                 </div>
             </div>

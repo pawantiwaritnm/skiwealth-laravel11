@@ -305,25 +305,25 @@
                                         <ul class="data-list floated clearfix">
                                             <li id="age"></li>
                                             <li>
-                                                <input type="radio" name="account_type" value="Savings" class="check_radio option-input" id="savings" {{ old('account_type', $bankDetails->account_type ?? '') == 'Savings' ? 'checked' : '' }} required>
+                                                <input type="radio" name="account_type" value="Savings" class="check_radio option-input" id="savings" {{ old('account_type', $bankDetail->account_type ?? '') == 'Savings' ? 'checked' : '' }} required>
                                                 <label for="savings">Savings</label>
                                             </li>
                                             <li>
-                                                <input type="radio" name="account_type" value="Current" class="check_radio option-input" id="current" {{ old('account_type', $bankDetails->account_type ?? '') == 'Current' ? 'checked' : '' }}>
+                                                <input type="radio" name="account_type" value="Current" class="check_radio option-input" id="current" {{ old('account_type', $bankDetail->account_type ?? '') == 'Current' ? 'checked' : '' }}>
                                                 <label for="current">Current</label>
                                             </li>
                                         </ul>
                                         <ul class="data-list">
                                             <li>
                                                 <label>Account Number</label>
-                                                <input type="number" name="account_number" id="account_number" class="required form-control" placeholder="Account Number" required value="{{ old('account_number', $bankDetails->account_number ?? '') }}" {{ !empty($bankDetails->account_number) ? 'readonly' : '' }}>
+                                                <input type="number" name="account_number" id="account_number" class="required form-control" placeholder="Account Number" required value="{{ old('account_number', $bankDetail->account_number ?? '') }}" {{ !empty($bankDetail->account_number) ? 'readonly' : '' }}>
                                                 <span class="validation_message_error error" id="account_numberError"></span>
                                             </li>
                                         </ul>
                                         <ul class="data-list">
                                             <li>
                                                 <label>IFSC Code</label>
-                                                <input type="text" name="ifsc_code" id="ifsc_code_i" class="required form-control" placeholder="IFSC Code" required value="{{ old('ifsc_code', $bankDetails->ifsc_code ?? '') }}" {{ !empty($bankDetails->ifsc_code) ? 'readonly' : '' }}>
+                                                <input type="text" name="ifsc_code" id="ifsc_code_i" class="required form-control" placeholder="IFSC Code" required value="{{ old('ifsc_code', $bankDetail->ifsc_code ?? '') }}" {{ !empty($bankDetail->ifsc_code) ? 'readonly' : '' }}>
                                                 <span class="validation_message_error error" id="ifsc_codeError"></span>
                                             </li>
                                         </ul>
