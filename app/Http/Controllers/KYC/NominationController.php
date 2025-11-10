@@ -48,8 +48,8 @@ class NominationController extends Controller
             'guardian_address' => 'required_if:nominee_minor,1|nullable|string',
             'guardian_state' => 'required_if:nominee_minor,1|nullable|string|max:100',
             'guardian_country' => 'required_if:nominee_minor,1|nullable|string|max:100',
-            'guardian_pin_code' => 'required_if:nominee_minor,1|nullable|digits:6',
-            'guardian_mobile' => 'required_if:nominee_minor,1|nullable|digits:10',
+            'guardian_pin_code' => 'required_if:nominee_minor,1|nullable|string|size:6|regex:/^[0-9]{6}$/',
+            'guardian_mobile' => 'required_if:nominee_minor,1|nullable|string|size:10|regex:/^[0-9]{10}$/',
             'guardian_email' => 'required_if:nominee_minor,1|nullable|email',
             'relation_of_guardian' => 'required_if:nominee_minor,1|nullable|string|max:100',
             'guardian_identification' => 'required_if:nominee_minor,1|nullable|string|max:100',
@@ -59,7 +59,7 @@ class NominationController extends Controller
             'name_of_nominee' => 'required|array|min:1',
             'name_of_nominee.*' => 'required|string|max:255',
             'nominee_mobile' => 'required|array|min:1',
-            'nominee_mobile.*' => 'required|digits:10',
+            'nominee_mobile.*' => 'required|string|size:10|regex:/^[0-9]{10}$/',
             'nominee_email' => 'required|array|min:1',
             'nominee_email.*' => 'required|email',
             'share_of_nominees' => 'required|array|min:1',
@@ -75,9 +75,18 @@ class NominationController extends Controller
             'nominee_country' => 'required|array|min:1',
             'nominee_country.*' => 'required|integer',
             'nominee_pin_code' => 'required|array|min:1',
-            'nominee_pin_code.*' => 'required|digits:6',
+            'nominee_pin_code.*' => 'required|string|size:6|regex:/^[0-9]{6}$/',
             'nominee_dob' => 'required|array|min:1',
             'nominee_dob.*' => 'required|date',
+        ], [
+            'guardian_pin_code.size' => 'Guardian pin code must be 6 digits',
+            'guardian_pin_code.regex' => 'Guardian pin code must contain only numbers',
+            'guardian_mobile.size' => 'Guardian mobile must be 10 digits',
+            'guardian_mobile.regex' => 'Guardian mobile must contain only numbers',
+            'nominee_mobile.*.size' => 'Nominee mobile must be 10 digits',
+            'nominee_mobile.*.regex' => 'Nominee mobile must contain only numbers',
+            'nominee_pin_code.*.size' => 'Nominee pin code must be 6 digits',
+            'nominee_pin_code.*.regex' => 'Nominee pin code must contain only numbers',
         ]);
 
         if ($validator->fails()) {
@@ -145,6 +154,20 @@ class NominationController extends Controller
             
             // Create nomination details for each nominee
             foreach ($request->name_of_nominee as $index => $name) {
+                // Handle nominee document upload
+                $nomineeDocumentPath = null;
+                $documentFieldName = 'nominee_document_' . $index;
+
+                if ($request->hasFile($documentFieldName)) {
+                    $file = $request->file($documentFieldName);
+                    $fileName = time() . '_nominee_' . $index . '_' . $file->getClientOriginalName();
+                    $nomineeDocumentPath = $file->storeAs('uploads/nomination/nominee', $fileName, 'public');
+                }
+
+                // Get nominee identification type
+                $identificationFieldName = 'nominee_identification_' . $index;
+                $nomineeIdentification = $request->input($identificationFieldName);
+
                 NominationDetail::create([
                     'nomination_id' => $nomination->id,
                     'name_of_nominee' => $name,
@@ -155,9 +178,10 @@ class NominationController extends Controller
                     'nominee_address' => $request->nominee_address[$index],
                     'nominee_city' => $request->nominee_city[$index],
                     'nominee_state' => $request->nominee_state[$index],
-                    'nominee_country' => $request->nominee_country[$index],
+                    'nominees_country' => $request->nominee_country[$index], // Note: column name is plural
                     'nominee_pin_code' => $request->nominee_pin_code[$index],
-                    'nominee_dob' => $request->nominee_dob[$index],
+                    'nominee_identification' => $nomineeIdentification,
+                    'nominee_document' => $nomineeDocumentPath,
                     'status' => 1,
                 ]);
             }
@@ -177,7 +201,19 @@ class NominationController extends Controller
                 'user_id' => $userId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
             ]);
+
+            // In development, show detailed error
+            if (config('app.debug')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error: ' . $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ], 500);
+            }
 
             return response()->json([
                 'success' => false,

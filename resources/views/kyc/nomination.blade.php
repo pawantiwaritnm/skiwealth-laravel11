@@ -244,7 +244,7 @@
                                     <select name="nominee_country[]" id="country_{{ $index }}" class="form-control" required>
                                         <option value="">Select Country</option>
                                         @foreach($countries as $country)
-                                            <option value="{{ $country->id }}" {{ $detail->nominee_country == $country->id ? 'selected' : '' }}>{{ $country->country }}</option>
+                                            <option value="{{ $country->id }}" {{ $detail->nominees_country == $country->id ? 'selected' : '' }}>{{ $country->country }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -258,7 +258,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="nominee_dob_{{ $index }}">Date of Birth</label>
-                                    <input type="date" class="form-control" id="nominee_dob_{{ $index }}" name="nominee_dob[]" value="{{ $detail->nominee_dob }}" required>
+                                    <input type="date" class="form-control" id="nominee_dob_{{ $index }}" name="nominee_dob[]" value="{{ $detail->nominee_dob ? \Carbon\Carbon::parse($detail->nominee_dob)->format('Y-m-d') : '' }}" required>
                                 </div>
                             </div>
                         </div>
@@ -293,12 +293,12 @@
                                             $ext = pathinfo($detail->nominee_document, PATHINFO_EXTENSION);
                                         @endphp
                                         @if($ext == 'pdf')
-                                            <a target='_blank' href="{{ asset('storage/nominee_document/' . $detail->nominee_document) }}">
+                                            <a target='_blank' href="{{ asset('storage/' . $detail->nominee_document) }}">
                                                 <img src="{{ asset('images/pdficon.png') }}" />
                                             </a><br /><br />
                                         @else
-                                            <a target='_blank' href="{{ asset('storage/nominee_document/' . $detail->nominee_document) }}">
-                                                <img width="50" height="60" src="{{ asset('storage/nominee_document/' . $detail->nominee_document) }}" />
+                                            <a target='_blank' href="{{ asset('storage/' . $detail->nominee_document) }}">
+                                                <img width="50" height="60" src="{{ asset('storage/' . $detail->nominee_document) }}" />
                                             </a><br /><br />
                                         @endif
                                     @endif
@@ -375,7 +375,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Date of Birth {in case of minor Nominee(s)}</label>
-                        <input type="date" class="form-control" name="date_of_birth" value="{{ $nomination->date_of_birth ?? '' }}">
+                        <input type="date" class="form-control" name="date_of_birth" value="{{ isset($nomination->date_of_birth) && $nomination->date_of_birth ? \Carbon\Carbon::parse($nomination->date_of_birth)->format('Y-m-d') : '' }}">
                         <div class="error"></div>
                     </div>
                 </div>
@@ -458,12 +458,12 @@
                                 $ext = pathinfo($nomination->guardian_document, PATHINFO_EXTENSION);
                             @endphp
                             @if($ext == 'pdf')
-                                <a target='_blank' href="{{ asset('storage/guardian_document/' . $nomination->guardian_document) }}">
+                                <a target='_blank' href="{{ asset('storage/' . $nomination->guardian_document) }}">
                                     <img src="{{ asset('images/pdficon.png') }}" />
                                 </a><br /><br />
                             @else
-                                <a target='_blank' href="{{ asset('storage/guardian_document/' . $nomination->guardian_document) }}">
-                                    <img width="50" height="60" src="{{ asset('storage/guardian_document/' . $nomination->guardian_document) }}" />
+                                <a target='_blank' href="{{ asset('storage/' . $nomination->guardian_document) }}">
+                                    <img width="50" height="60" src="{{ asset('storage/' . $nomination->guardian_document) }}" />
                                 </a><br /><br />
                             @endif
                         @endif
@@ -526,72 +526,182 @@ $(document).ready(function() {
         }
     });
 
-    // jQuery Validation
-    $('#nomination_form').validate({
-        ignore: [],  // Don't ignore any fields
-        rules: {
-            'nominee_minor': {
-                required: true
+    // Client-side validation function
+    function validateForm() {
+        var isValid = true;
+        var errors = [];
+
+        // Validate nominee mobile numbers
+        $('input[name="nominee_mobile[]"]').each(function(index) {
+            var value = $(this).val().trim();
+            if (value === '') {
+                errors.push('Nominee ' + (index + 1) + ' mobile is required');
+                $(this).addClass('is-invalid').siblings('.error').text('Mobile is required');
+                isValid = false;
+            } else if (!/^[0-9]{10}$/.test(value)) {
+                errors.push('Nominee ' + (index + 1) + ' mobile must be exactly 10 digits');
+                $(this).addClass('is-invalid').siblings('.error').text('Must be exactly 10 digits');
+                isValid = false;
             }
-        },
-        messages: {
-            'nominee_minor': 'Please select if nominee is minor'
-        },
-        submitHandler: function(form) {
-            // Clear previous errors
-            $('#general_error').hide().html('');
+        });
 
-            // Disable submit button
-            var $btn = $('#nominationform, button[type="submit"]');
-            var originalText = $btn.html();
-            $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+        // Validate nominee pin codes
+        $('input[name="nominee_pin_code[]"]').each(function(index) {
+            var value = $(this).val().trim();
+            if (value === '') {
+                errors.push('Nominee ' + (index + 1) + ' pin code is required');
+                $(this).addClass('is-invalid').siblings('.error').text('Pin code is required');
+                isValid = false;
+            } else if (!/^[0-9]{6}$/.test(value)) {
+                errors.push('Nominee ' + (index + 1) + ' pin code must be exactly 6 digits');
+                $(this).addClass('is-invalid').siblings('.error').text('Must be exactly 6 digits');
+                isValid = false;
+            }
+        });
 
-            var formData = new FormData(form);
+        // Validate guardian fields if minor is selected
+        if ($('input[name="nominee_minor"]:checked').val() == '1') {
+            var guardianMobile = $('#guardian_mobile').val().trim();
+            if (guardianMobile === '') {
+                errors.push('Guardian mobile is required');
+                $('#guardian_mobile').addClass('is-invalid').siblings('.error').text('Mobile is required');
+                isValid = false;
+            } else if (!/^[0-9]{10}$/.test(guardianMobile)) {
+                errors.push('Guardian mobile must be exactly 10 digits');
+                $('#guardian_mobile').addClass('is-invalid').siblings('.error').text('Must be exactly 10 digits');
+                isValid = false;
+            }
 
-            $.ajax({
-                url: '{{ route("kyc.nomination.submit") }}',
-                method: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        if (response.redirect) {
-                            window.location.href = response.redirect;
-                        } else {
-                            window.location.href = '{{ route("kyc.documents") }}';
-                        }
+            var guardianPin = $('#guardian_pin_code').val().trim();
+            if (guardianPin === '') {
+                errors.push('Guardian pin code is required');
+                $('#guardian_pin_code').addClass('is-invalid').siblings('.error').text('Pin code is required');
+                isValid = false;
+            } else if (!/^[0-9]{6}$/.test(guardianPin)) {
+                errors.push('Guardian pin code must be exactly 6 digits');
+                $('#guardian_pin_code').addClass('is-invalid').siblings('.error').text('Must be exactly 6 digits');
+                isValid = false;
+            }
+        }
+
+        if (!isValid) {
+            var errorHtml = '<strong>Please fix the following errors:</strong><ul style="margin-top: 10px; margin-bottom: 0;">';
+            errors.forEach(function(error) {
+                errorHtml += '<li>' + error + '</li>';
+            });
+            errorHtml += '</ul>';
+            $('#general_error').html(errorHtml).show();
+            $('html, body').animate({ scrollTop: 0 }, 'slow');
+        }
+
+        return isValid;
+    }
+
+    // Form submission handler
+    $('#nomination_form').on('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission and page reload
+        e.stopPropagation(); // Stop event bubbling
+
+        // Clear previous errors
+        $('#general_error').hide().html('');
+        $('.error').text('');
+        $('.is-invalid').removeClass('is-invalid');
+
+        // Run client-side validation
+        if (!validateForm()) {
+            return false;
+        }
+
+        // Disable submit button
+        var $btn = $('#nominationform');
+        var originalText = $btn.html();
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: '{{ route("kyc.nomination.submit") }}',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    if (response.redirect) {
+                        window.location.href = response.redirect;
                     } else {
-                        $('#general_error').html('<strong>Error:</strong> ' + response.message).show();
-                        $('html, body').animate({ scrollTop: 0 }, 'slow');
-                        $btn.prop('disabled', false).html(originalText);
+                        window.location.href = '{{ route("kyc.documents") }}';
                     }
-                },
-                error: function(xhr) {
-                    if (xhr.status === 422) {
-                        var errors = xhr.responseJSON.errors;
-                        var errorHtml = '<strong>Please fix the following errors:</strong><ul style="margin-top: 10px;">';
-
-                        $.each(errors, function(key, value) {
-                            errorHtml += '<li>' + value[0] + '</li>';
-                        });
-
-                        errorHtml += '</ul>';
-                        $('#general_error').html(errorHtml).show();
-                        $('html, body').animate({ scrollTop: 0 }, 'slow');
-                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                        $('#general_error').html('<strong>Error:</strong> ' + xhr.responseJSON.message).show();
-                        $('html, body').animate({ scrollTop: 0 }, 'slow');
-                    } else {
-                        $('#general_error').html('<strong>Error:</strong> An unexpected error occurred. Please try again.').show();
-                        $('html, body').animate({ scrollTop: 0 }, 'slow');
-                    }
+                } else {
+                    $('#general_error').html('<strong>Error:</strong> ' + response.message).show();
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
                     $btn.prop('disabled', false).html(originalText);
                 }
-            });
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    var errors = xhr.responseJSON.errors;
+                    var errorHtml = '<strong>Please fix the following errors:</strong><ul style="margin-top: 10px; margin-bottom: 0;">';
+                    var firstErrorField = null;
 
-            return false; // Prevent default form submission
-        }
+                    $.each(errors, function(key, value) {
+                        errorHtml += '<li>' + value[0] + '</li>';
+
+                        // Try to find the field and show inline error
+                        var fieldName = key.replace(/\./g, '_').replace(/\*/g, '');
+                        var $field = $('[name="' + key + '"]');
+
+                        // For array fields like nominee_mobile.0
+                        if ($field.length === 0 && key.includes('.')) {
+                            var parts = key.split('.');
+                            var baseName = parts[0];
+                            var index = parts[1];
+                            $field = $('[name="' + baseName + '[]"]').eq(parseInt(index));
+                        }
+
+                        if ($field.length > 0) {
+                            $field.addClass('is-invalid');
+                            var $errorContainer = $field.siblings('.error').first();
+                            if ($errorContainer.length === 0) {
+                                $errorContainer = $field.parent().find('.error').first();
+                            }
+                            if ($errorContainer.length === 0) {
+                                $errorContainer = $field.closest('.form-group').find('.error').first();
+                            }
+                            if ($errorContainer.length > 0) {
+                                $errorContainer.text(value[0]).show();
+                            }
+
+                            // Track first error field for scrolling
+                            if (!firstErrorField) {
+                                firstErrorField = $field;
+                            }
+                        }
+                    });
+
+                    errorHtml += '</ul>';
+                    $('#general_error').html(errorHtml).show();
+
+                    // Scroll to first error or top
+                    if (firstErrorField) {
+                        $('html, body').animate({
+                            scrollTop: firstErrorField.offset().top - 100
+                        }, 'slow');
+                    } else {
+                        $('html, body').animate({ scrollTop: 0 }, 'slow');
+                    }
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    $('#general_error').html('<strong>Error:</strong> ' + xhr.responseJSON.message).show();
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+                } else {
+                    $('#general_error').html('<strong>Error:</strong> An unexpected error occurred. Please try again.').show();
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+                }
+                $btn.prop('disabled', false).html(originalText);
+            }
+        });
+
+        return false; // Extra safeguard to prevent form submission
     });
 
     // Toggle guardian section
@@ -621,36 +731,41 @@ $(document).ready(function() {
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Name of Nominee(s) (Mr./Ms.) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control validate-nominee" name="name_of_nominee[]" data-rule-required="true" data-msg-required="Name is required">
+                            <input type="text" class="form-control" name="name_of_nominee[]" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Mobile <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control validate-nominee" name="nominee_mobile[]" maxlength="10" data-rule-required="true" data-rule-digits="true" data-rule-minlength="10" data-msg-required="Mobile is required" data-msg-digits="Only digits allowed" data-msg-minlength="Must be 10 digits">
+                            <input type="text" class="form-control" name="nominee_mobile[]" maxlength="10" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Email ID <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control validate-nominee" name="nominee_email[]" data-rule-required="true" data-rule-email="true" data-msg-required="Email is required" data-msg-email="Enter valid email">
+                            <input type="email" class="form-control" name="nominee_email[]" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Share of Nominee(s) <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="number" class="form-control nominee_share validate-nominee" name="share_of_nominees[]" value="0" step="0.01" min="0" max="100" data-rule-required="true" data-rule-number="true" data-rule-min="0" data-rule-max="100" data-msg-required="Share is required" data-msg-number="Enter valid number" data-msg-min="Min 0%" data-msg-max="Max 100%">
+                                <input type="number" class="form-control nominee_share" name="share_of_nominees[]" value="0" step="0.01" min="0" max="100" required>
                                 <div class="input-group-append">
                                     <span class="input-group-text">%</span>
                                 </div>
                             </div>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Relation With the Applicant</label>
                             <input type="text" class="form-control" name="relation_applicant_name_nominees[]">
+                            <div class="error"></div>
                         </div>
                     </div>
                 </div>
@@ -658,39 +773,45 @@ $(document).ready(function() {
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Address <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control validate-nominee" name="nominee_address[]" data-rule-required="true" data-msg-required="Address is required">
+                            <input type="text" class="form-control" name="nominee_address[]" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>City/Place <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control validate-nominee" name="nominee_city[]" data-rule-required="true" data-msg-required="City is required">
+                            <input type="text" class="form-control" name="nominee_city[]" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>State <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control validate-nominee" name="nominee_state[]" data-rule-required="true" data-msg-required="State is required">
+                            <input type="text" class="form-control" name="nominee_state[]" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Country <span class="text-danger">*</span></label>
-                            <select name="nominee_country[]" class="form-control validate-nominee" data-rule-required="true" data-msg-required="Country is required">
+                            <select name="nominee_country[]" class="form-control" required>
                                 ${countriesOptions}
                             </select>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Pin Code <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control validate-nominee" name="nominee_pin_code[]" maxlength="6" data-rule-required="true" data-rule-digits="true" data-rule-minlength="6" data-msg-required="Pin code is required" data-msg-digits="Only digits allowed" data-msg-minlength="Must be 6 digits">
+                            <input type="text" class="form-control" name="nominee_pin_code[]" maxlength="6" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Date of Birth <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control validate-nominee" name="nominee_dob[]" data-rule-required="true" data-msg-required="Date of birth is required">
+                            <input type="date" class="form-control" name="nominee_dob[]" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                 </div>
@@ -699,7 +820,7 @@ $(document).ready(function() {
                         <h6 style="display: table; width: 100%; margin-top: 10px;">Nominee Identification Details</h6>
                         <span>[Please tick any one of following and provide details of same]</span>
                         <div class="form-group tick_box" style="margin-top: 15px;">
-                            <input type="radio" id="photo_${nomineeCount}" class="check_radio option-input validate-nominee" name="nominee_identification_${nomineeCount-1}" value="photograph" data-rule-required="true" data-msg-required="Please select identification type">
+                            <input type="radio" id="photo_${nomineeCount}" class="check_radio option-input" name="nominee_identification_${nomineeCount-1}" value="photograph" required>
                             <label for="photo_${nomineeCount}" class="label_gender">Photograph & Signature</label><br>
                             <input type="radio" id="pan_${nomineeCount}" class="check_radio option-input" name="nominee_identification_${nomineeCount-1}" value="pan">
                             <label for="pan_${nomineeCount}" class="label_gender">PAN</label><br>
@@ -711,6 +832,7 @@ $(document).ready(function() {
                             <label for="identity_${nomineeCount}" class="label_gender">Proof of Identity</label><br>
                             <input type="radio" id="demat_${nomineeCount}" class="check_radio option-input" name="nominee_identification_${nomineeCount-1}" value="demat_account_iD">
                             <label for="demat_${nomineeCount}" class="label_gender">Demat Account ID</label>
+                            <div class="error"></div>
                         </div>
                         <input type="hidden" name="radio_index[]" value="${nomineeCount-1}">
                     </div>
@@ -718,7 +840,8 @@ $(document).ready(function() {
                         <h6 style="display: table; width: 100%;">Please Upload Selected Nominee Identification Document</h6>
                         <div class="form-group">
                             <label>Document <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control validate-nominee" name="nominee_document_${nomineeCount-1}" data-rule-required="true" data-msg-required="Document is required">
+                            <input type="file" class="form-control" name="nominee_document_${nomineeCount-1}" required>
+                            <div class="error"></div>
                         </div>
                     </div>
                 </div>
@@ -732,28 +855,6 @@ $(document).ready(function() {
             </div>
         `;
         $('#nominee_field').append(html);
-
-        // Apply validation to newly added fields
-        $('.validate-nominee').each(function() {
-            $(this).rules('add', {
-                required: $(this).data('rule-required') || false,
-                digits: $(this).data('rule-digits') || false,
-                email: $(this).data('rule-email') || false,
-                number: $(this).data('rule-number') || false,
-                minlength: $(this).data('rule-minlength') || 0,
-                min: $(this).data('rule-min'),
-                max: $(this).data('rule-max'),
-                messages: {
-                    required: $(this).data('msg-required'),
-                    digits: $(this).data('msg-digits'),
-                    email: $(this).data('msg-email'),
-                    number: $(this).data('msg-number'),
-                    minlength: $(this).data('msg-minlength'),
-                    min: $(this).data('msg-min'),
-                    max: $(this).data('msg-max')
-                }
-            });
-        });
     });
 
     // Remove dynamic nominee
@@ -761,10 +862,6 @@ $(document).ready(function() {
         if (confirm('Are you sure you want to remove this nominee?')) {
             $(this).closest('.nominee_Details').remove();
             nomineeCount--;
-
-            // Revalidate after removal
-            $('#nomination_form').validate().destroy();
-            $('#nomination_form').validate();
         }
     });
 
@@ -806,6 +903,16 @@ $(document).ready(function() {
         } else {
             $('#general_error').hide();
         }
+    });
+
+    // Restrict mobile fields to only digits and max 10 characters
+    $(document).on('input', 'input[name="nominee_mobile[]"], #guardian_mobile', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);
+    });
+
+    // Restrict pin code fields to only digits and max 6 characters
+    $(document).on('input', 'input[name="nominee_pin_code[]"], #guardian_pin_code', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').substring(0, 6);
     });
 });
 </script>
