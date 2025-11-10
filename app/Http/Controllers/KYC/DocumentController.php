@@ -99,7 +99,7 @@ class DocumentController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Documents uploaded successfully',
-                'redirect' => route('dashboard'), // Or thank you page
+                'redirect' => route('thank-you'), // Or thank you page
             ]);
 
         } catch (\Exception $e) {
